@@ -7,7 +7,7 @@ import sys
 # paralellisation of work, we can use more workers
 # 1 task + 2 workers
 # each worker gets the same number of messages - round robin
-
+# added FEATURE for ack after worker finishes, in case it dies message is handed to other worker
 
 def main():
      # establish connextion with rabbitmq server
@@ -21,8 +21,9 @@ def main():
         print(f" [x] Received {body.decode()}")
         time.sleep(body.count(b'.'))
         print(" [x] Done")
+        ch.basic_ack(delivery_tag = method.delivery_tag)
 
-    channel.basic_consume(queue='hello', auto_ack=True, on_message_callback=callback)
+    channel.basic_consume(queue='hello', on_message_callback=callback) # remove auto_ack=True arg
 
     print(' [*] Waiting for messages. To exit press CTRL+C')
     channel.start_consuming()
