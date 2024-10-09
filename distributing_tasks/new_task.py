@@ -1,6 +1,7 @@
 import sys
 import pika
 
+# NEW FEATURE: in case node crashes, queue and messages are not lost
 
 def main():
     # establish connextion with rabbitmq server
@@ -9,10 +10,10 @@ def main():
     channel = connection.channel()
 
     # creating queue
-    channel.queue_declare(queue='hello')
+    channel.queue_declare(queue='hello_durable', durable=True) # added durability for queue
 
     message = ' '.join(sys.argv[1:]) or "Hello World!"
-    channel.basic_publish(exchange='', routing_key='hello', body=message)
+    channel.basic_publish(exchange='', routing_key='hello_durable', body=message, properties=pika.BasicProperties(delivery_mode=pika.DeliveryMode.Persistent)) # message are saved to cache or disc (not 100% certain, there is short window for lose)
     
     print(f" [x] Sent {message}")
 
